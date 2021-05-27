@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 
 public final class Injector {
@@ -18,14 +19,14 @@ public final class Injector {
 	}
 
 	public static void inject(final String sheetName, final List<TableTuple> tableTuples, final File sheetFile) throws IOException {
-		final var file = new FileInputStream(sheetFile);
-		try (var wb = new XSSFWorkbook(file)) {
+		final var fileStream = new FileInputStream(sheetFile);
+		try (var wb = new XSSFWorkbook(fileStream)) {
 			final var sheet = wb.getSheet(sheetName);
 			final var ev = wb.getCreationHelper().createFormulaEvaluator();
 			final var lastRow = sheet.getLastRowNum();
 			Cell cell;
 			Row row;
-			for (var idxRow = 1; idxRow < lastRow; idxRow++) {
+			for (var idxRow = 1; idxRow <= lastRow; idxRow++) {
 				row = sheet.getRow(idxRow);
 				for (var tt : tableTuples) {
 					cell = row.getCell(tt.col());
@@ -33,7 +34,7 @@ public final class Injector {
 					ev.evaluateFormulaCell(cell);
 				}
 			}
-			file.close();
+			fileStream.close();
 			writeFile(wb, sheetFile);
 		}
 	}
@@ -41,8 +42,8 @@ public final class Injector {
 	@SneakyThrows
 	private static void writeFile(final Workbook wb, final File file) {
 		final var dir = file.getParentFile();
-		if (!dir.exists()) dir.mkdirs();
-		if (!file.exists()) file.createNewFile();
+		if (!dir.exists()) Files.createDirectory(dir.toPath());
+		if (!file.exists()) Files.createFile(file.toPath());
 		@Cleanup OutputStream fileOut = new FileOutputStream(file);
 		wb.write(fileOut);
 		wb.close();

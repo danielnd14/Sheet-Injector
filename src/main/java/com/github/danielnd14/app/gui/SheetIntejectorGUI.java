@@ -84,6 +84,11 @@ public final class SheetIntejectorGUI extends JFrame {
 		dialog.setVisible(true);
 	}
 
+	@Override
+	public void setTitle(String title) {
+		super.setTitle("Sheet-Injector - " + title);
+	}
+
 	private static DefaultTableModel getDataModel() {
 		return new DefaultTableModel(
 				new Object[][]{
@@ -246,9 +251,11 @@ public final class SheetIntejectorGUI extends JFrame {
 			var listErrorFiles = new ArrayList<Message>();
 			bar.setMinimum(0);
 			bar.setMaximum(sheetsToInject.size());
+			bar.setValue(0);
 			chronometer.start();
 			sheetsToInject.forEach(sheet -> {
 				try {
+					instance.setTitle(sheet.getFileName().toString());
 					Injector.inject(sheetName, tupleList, sheet.toFile());
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -258,7 +265,9 @@ public final class SheetIntejectorGUI extends JFrame {
 				System.gc();
 			});
 			chronometer.stop();
-			JOptionPane.showMessageDialog(instance, "Pronto!");
+			var title = "Pronto!";
+			JOptionPane.showMessageDialog(instance, title);
+			instance.setTitle(title);
 			if (!listErrorFiles.isEmpty())
 				showListMessages(listErrorFiles, "Não consegui injetar nos " + listErrorFiles.size() + " arquivos abaixo");
 			unlockButtons();
