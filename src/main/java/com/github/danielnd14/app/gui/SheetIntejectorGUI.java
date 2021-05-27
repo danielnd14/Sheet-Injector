@@ -26,7 +26,7 @@ public final class SheetIntejectorGUI extends JFrame {
 	private static JFrame instance;
 	private final Color redAccentColor = new Color(138, 35, 35);
 	private final Color greenAccentColor = new Color(34, 114, 0);
-	BasicUnitTimer chronometer;
+	private BasicUnitTimer chronometer;
 	private JTextField fieldSheet;
 	private JTable table;
 	private JProgressBar bar;
