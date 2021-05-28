@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -260,9 +261,10 @@ public final class SheetIntejectorGUI extends JFrame {
 				} catch (Exception e) {
 					e.printStackTrace();
 					listErrorFiles.add(new Message(e.getMessage(), sheet.toAbsolutePath().toString()));
+				} finally {
+					bar.setValue(bar.getValue() + 1);
+					System.gc();
 				}
-				bar.setValue(bar.getValue() + 1);
-				System.gc();
 			});
 			chronometer.stop();
 			var title = "Pronto!";
@@ -358,7 +360,8 @@ public final class SheetIntejectorGUI extends JFrame {
 					if ((boolean) data.getValueAt(i, 0))
 						return (Path) data.getValueAt(i, 1);
 					return null;
-				}).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
+				}).filter(Objects::nonNull).sorted(Comparator.comparingLong(o -> o.toFile().length()))
+						.collect(Collectors.toUnmodifiableList());
 				if (!sheetsToInject.isEmpty())
 					initInject(sheetsToInject, nameTab, tupleList);
 				this.dispose();
