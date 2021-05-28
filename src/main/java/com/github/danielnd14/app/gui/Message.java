@@ -10,10 +10,12 @@ public final class Message {
 	}
 
 	public String message() {
+		if (message == null) return "null";
 		return message.trim();
 	}
 
 	public String item() {
+		if (item == null) return "null";
 		return item.trim();
 	}
 

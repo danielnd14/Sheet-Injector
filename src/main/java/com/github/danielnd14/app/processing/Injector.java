@@ -8,7 +8,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -18,7 +21,7 @@ public final class Injector {
 		throw new RuntimeException("This is a utility class");
 	}
 
-	public static void inject(final String sheetName, final List<TableTuple> tableTuples, final File sheetFile) throws IOException {
+	public static void inject(final String sheetName, final List<TableTuple> tableTuples, final File sheetFile) throws Exception {
 		final var fileStream = new FileInputStream(sheetFile);
 		try (var wb = new XSSFWorkbook(fileStream)) {
 			final var sheet = wb.getSheet(sheetName);
