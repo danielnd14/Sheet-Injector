@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public final class PoolService implements ExecutorService {
-	private static ExecutorService INSTANCE;
+	private static ExecutorService instance;
 	private final ExecutorService pool;
 
 	private PoolService() {
-		if (INSTANCE != null) throw new RuntimeException("Singleton Must be Singleton");
+		if (instance != null) throw new RuntimeException("Singleton Must be Singleton");
 		pool = Executors.newWorkStealingPool();
 	}
 
-	public synchronized static ExecutorService getInstance() {
-		if (INSTANCE == null) INSTANCE = new PoolService();
-		return INSTANCE;
+	public synchronized static ExecutorService instance() {
+		if (instance == null) instance = new PoolService();
+		return instance;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package com.github.danielnd14.app;
 
-import com.github.danielnd14.app.gui.SheetIntejectorGUI;
+import com.github.danielnd14.app.gui.SheetInjectorGUI;
 
 import javax.swing.*;
 import java.util.stream.Stream;
@@ -12,8 +12,8 @@ public final class SheetInjector {
 
 	public static void main(String[] args) {
 		setLookAndFeel();
-		SheetIntejectorGUI
-				.getInstance()
+		SheetInjectorGUI
+				.instance()
 				.setVisible(true);
 	}
 

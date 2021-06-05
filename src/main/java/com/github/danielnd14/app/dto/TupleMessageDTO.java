@@ -1,10 +1,10 @@
-package com.github.danielnd14.app.gui;
+package com.github.danielnd14.app.dto;
 
-public final class Message {
+public final class TupleMessageDTO {
 	private final String message;
 	private final String item;
 
-	public Message(String message, String item) {
+	public TupleMessageDTO(String message, String item) {
 		this.message = message;
 		this.item = item;
 	}

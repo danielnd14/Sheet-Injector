@@ -1,4 +1,4 @@
-package com.github.danielnd14.app.cronometro;
+package com.github.danielnd14.app.gui.cronometro;
 
 public interface BasicUnitTimer {
 	void start();
