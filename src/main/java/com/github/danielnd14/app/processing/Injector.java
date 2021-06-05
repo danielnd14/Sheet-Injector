@@ -70,7 +70,7 @@ public final class Injector {
 				if (formula.equalsIgnoreCase("self") && !formula.equalsIgnoreCase(TableDTO.NOTHING_TO_DO)) {
 					try {
 						cell.setCellFormula(cell.getNumericCellValue() + "");
-					} catch (RuntimeException e) {
+					} catch (IllegalStateException e) {
 						cell.setCellFormula("\"" + cell.getStringCellValue() + "\"");
 					}
 				}

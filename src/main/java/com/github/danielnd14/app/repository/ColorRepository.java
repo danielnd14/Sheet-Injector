@@ -1,15 +1,20 @@
-package com.github.danielnd14.app.gui;
+package com.github.danielnd14.app.repository;
 
 import java.awt.*;
 
 public final class ColorRepository {
 	private static ColorRepository instance;
-	private final Color blueAccent = new Color(0, 64, 146);
-	private final Color greenAccent = new Color(34, 114, 0);
-	private final Color redAccent = new Color(138, 35, 35);
+	private final Color blueAccent;
+	private final Color greenAccent;
+	private final Color redAccent;
+	private final Color orangeAccent;
 
 	private ColorRepository() {
 		if (instance != null) throw new RuntimeException("Single must be a singleton {" + this.getClass() + "}");
+		this.blueAccent = new Color(62, 133, 159);
+		this.greenAccent = new Color(73, 155, 84);
+		this.redAccent = new Color(198, 84, 80);
+		this.orangeAccent = new Color(247, 136, 50);
 	}
 
 	public static synchronized ColorRepository instance() {
@@ -27,5 +32,9 @@ public final class ColorRepository {
 
 	public Color getBlueAccent() {
 		return blueAccent;
+	}
+
+	public Color getOrangeAccent() {
+		return orangeAccent;
 	}
 }

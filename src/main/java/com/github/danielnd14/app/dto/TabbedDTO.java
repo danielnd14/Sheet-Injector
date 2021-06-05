@@ -22,6 +22,7 @@ public final class TabbedDTO {
 	public boolean isValid() {
 		return tabTitle != null && tupleList != null &&
 				!tabTitle.equalsIgnoreCase("Sem nome") &&
+				!tabTitle.isBlank() &&
 				!tupleList.isEmpty();
 	}
 

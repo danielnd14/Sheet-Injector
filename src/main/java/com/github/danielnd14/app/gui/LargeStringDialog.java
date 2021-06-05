@@ -3,7 +3,7 @@ package com.github.danielnd14.app.gui;
 import javax.swing.*;
 import java.awt.*;
 
-public class LargeStringDialog extends JDialog {
+public final class LargeStringDialog extends JDialog {
 
 	public LargeStringDialog(JFrame parent, String title, String largeString) {
 		super(parent, title, true);
@@ -38,7 +38,7 @@ public class LargeStringDialog extends JDialog {
 								.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
 								.addContainerGap())
 		);
-		setMinimumSize(new Dimension(600, parent.getHeight()));
+		setMinimumSize(new Dimension(650, parent.getHeight()));
 		setLocationRelativeTo(parent);
 		jTextArea1.setEnabled(false);
 		setVisible(true);

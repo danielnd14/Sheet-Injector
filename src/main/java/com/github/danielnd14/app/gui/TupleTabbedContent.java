@@ -1,7 +1,8 @@
 package com.github.danielnd14.app.gui;
 
 import com.github.danielnd14.app.dto.TableDTO;
-import com.github.danielnd14.app.validation.Validator;
+import com.github.danielnd14.app.repository.ColorRepository;
+import com.github.danielnd14.app.repository.ValidationRepository;
 import com.github.danielnd14.app.validation.ValidatorByRegex;
 
 import javax.swing.*;
@@ -18,11 +19,11 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.IntStream.range;
 
-public final class TableDTOTabbedContent extends JPanel implements AutoCloseable, TableDTOFont {
+public final class TupleTabbedContent extends JPanel implements AutoCloseable, TableDTOFont {
 	private JTabbedPane parent;
 	private JTable table;
 
-	public TableDTOTabbedContent(final JTabbedPane parent) {
+	public TupleTabbedContent(final JTabbedPane parent) {
 		Objects.requireNonNull(parent);
 		this.parent = parent;
 		SwingUtilities.invokeLater(this::initComponents);
@@ -33,8 +34,11 @@ public final class TableDTOTabbedContent extends JPanel implements AutoCloseable
 		final var jScrollPane1 = new JScrollPane();
 		final var buttonLess = new JButton("-");
 		final var buttonPlus = new JButton("+");
+		final var font = new Font("Fira Sans", Font.BOLD, 15);
 
 		table = new JTable();
+		table.setFont(font);
+		fieldSheet.setFont(font);
 		table.setModel(new javax.swing.table.DefaultTableModel(
 				new Object[][]{
 						{"", "", "ALL-[0]"}
@@ -121,9 +125,9 @@ public final class TableDTOTabbedContent extends JPanel implements AutoCloseable
 			}
 		});
 		//table-render
-		table.getColumnModel().getColumn(0).setCellRenderer(new CellRender(Validator.instance().getColumnValidator()));
+		table.getColumnModel().getColumn(0).setCellRenderer(new CellRender(ValidationRepository.instance().getColumnValidator()));
 		table.getColumnModel().getColumn(1).setCellRenderer(new CellRender());
-		table.getColumnModel().getColumn(2).setCellRenderer(new CellRender(Validator.instance().getRowValidator()));
+		table.getColumnModel().getColumn(2).setCellRenderer(new CellRender(ValidationRepository.instance().getRowValidator()));
 		table.getColumnModel().getColumn(0).setMinWidth(150);
 		table.getColumnModel().getColumn(1).setMinWidth(500);
 		table.getColumnModel().getColumn(2).setMinWidth(150);
@@ -144,24 +148,21 @@ public final class TableDTOTabbedContent extends JPanel implements AutoCloseable
 			var formula = model.getValueAt(row, 1).toString().trim();
 			var rows = model.getValueAt(row, 2).toString().replaceAll("\\s+", "");
 			return new TableDTO(col, formula, rows);
-		}).filter(TableDTO::isValid).sorted()
-				.collect(Collectors.toUnmodifiableList());
+		}).filter(TableDTO::isValid).collect(Collectors.toUnmodifiableList());
 	}
 
 	private static class CellRender extends DefaultTableCellRenderer {
-		private final Color greenAccentColor = new Color(34, 114, 0);
-		private final Color redAccentColor = new Color(138, 35, 35);
-		private final Color defaultColor;
 		private final ValidatorByRegex validator;
+		private final ColorRepository colors;
 
 		public CellRender(ValidatorByRegex validator) {
 			this.validator = validator;
-			defaultColor = null;
+			colors = ColorRepository.instance();
 		}
 
 		public CellRender() {
 			validator = null;
-			this.defaultColor = ColorRepository.instance().getBlueAccent();
+			this.colors = ColorRepository.instance();
 		}
 
 		@Override
@@ -170,10 +171,10 @@ public final class TableDTOTabbedContent extends JPanel implements AutoCloseable
 			final var render = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			final var rowsInfo = (String) value;
 			if (validator != null) {
-				if (validator.valid(rowsInfo))
-					render.setForeground(greenAccentColor);
-				else render.setForeground(redAccentColor);
-			} else render.setForeground(defaultColor);
+				if (validator.valid(rowsInfo.replaceAll("\\s+", "")))
+					render.setForeground(colors.getGreenAccent());
+				else render.setForeground(colors.getRedAccent());
+			} else render.setForeground(colors.getBlueAccent());
 			return render;
 		}
 	}

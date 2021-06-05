@@ -5,6 +5,7 @@ import com.github.danielnd14.app.dto.TupleMessageDTO;
 import com.github.danielnd14.app.gui.cronometro.UnitTimerImpl;
 import com.github.danielnd14.app.processing.Injector;
 import com.github.danielnd14.app.processing.RecursiveLister;
+import com.github.danielnd14.app.repository.ColorRepository;
 import com.github.danielnd14.app.threadservice.PoolService;
 
 import javax.swing.*;
@@ -279,16 +280,20 @@ public final class SheetInjectorGUI extends JFrame {
 
 	private static String getHelpString() {
 		return "Instruções gerais:\n\n" +
-				"1) Linhas das tabelas de injeção de dados/formulas que conterem alguma celula em branco serão ignoradas, fique atento.\n\n" +
+				"1) Linhas das tabelas de injeção de dados/formulas que conterem alguma celula em branco ou com valores na cor vermelha serão ignoradas, fique atento.\n\n" +
 				"2) Indices de colunas e linhas começam de 0.\n\n" +
 				"3) Das opções gerais de injeção tempos:\n\n" +
-				"3.1) É possível informar um intervalo para as colunas. Exemplo; imagine que sua intenção é injetar uma determinada formula da coluna 0 até coluna 25, basta informar o valor 0:25, na coluna de titulo \"COLUMN\"\n\n" +
-				"3.2) Assim como na coluna de título \"COLUMN\", a coluna de titulo \"ROW\" também pode receber intervalos, porém ela é um pouco mais versátil, pois alé do intervalo fechado citado no item 3.1, temos também a possibilidade de usar a palavra \"ALL\" para dizer que queremos em todas as linhas, ou usar \"ALL-[0]\" ou \"ALL-[0,1,2]\" ou ainda \"ALL-[10:34]\", para injetar a formula em todas as linhas exceto na primeira, ou exceto nas 3 primeiras ou em todas menos no intervalao 10:34.\n\n" +
-				"4) Das cores temos:\n\n" +
-				"4.1) Azul, cor para indicar que o programa não sabe avaliar de imediato se aquela informação é válida, ou seja, ele confia em você.\n\n" +
-				"4.2) Vermelho, cor de reprovação, essa cor indica que o programa está entendendo que a informação inserida pelo usuário é inválida.\n\n" +
-				"4.3) Verde, cor de aprovação, essa cor indica que o programa avaliou a informação inserida e entendeu ela como válida.\n\n" +
-				"5) Cronômetro, as cores não têm o mesmo significado para ele, no cronômetro, vermelho significa que ele está correndo, e verde que ele está parado.";
+				"3.1) É possível informar um intervalo para as colunas. Exemplo; imagine que sua intenção é injetar uma determinada formula da coluna 0 até coluna 25, basta informar o valor 0:25, na coluna de titulo \"COLUMN\". " +
+				"É possível também informar uma lista de colunas a sintaxe é assim: [0,1,5,78], o programa entenderá que deverá trabalhar nas colunas 0, 1, 5 e 78.\n\n" +
+				"3.2) Assim como na coluna de título \"COLUMN\", a coluna de titulo \"ROW\" também pode receber intervalos, porém ela é um pouco mais versátil, pois além dos intervalos citados no item 3.1, temos também a possibilidade de usar a palavra \"ALL\" para dizer que queremos em todas as linhas, ou usar \"ALL-[0]\" ou \"ALL-[0,1,2]\" ou ainda \"ALL-[10:34]\", para injetar a formula em todas as linhas exceto na primeira, ou exceto nas 3 primeiras ou em todas menos no intervalao 10:34.\n\n" +
+				"4) Das fórmulas temos:\n\n" +
+				"4.1) Formulas devem ser inseridas conforme a sintaxe e padrões dos estados unidos.\n\n" +
+				"4.2) O símbolo '#' serve para dizer ao programa que a formula deve usar o valor ordinal da linha, exemplo: =(DR#*AB#)+A2, nessa formula as colunas DR e AB acompanharão suas respectivas linhas, pois o símbolo '#' será substituido pelo indice da linha atual onde a formula está sendo aplicada. Logo quando o programa aplicar a formula na linha 5 ele irá colocar a seguinte fórmula =(DR5*AB5)+A2\n\n" +
+				"5) Das cores temos:\n\n" +
+				"5.1) Azul, cor para indicar que o programa não sabe avaliar de imediato se aquela informação é válida, ou seja, ele confia em você.\n\n" +
+				"5.2) Vermelho, cor de reprovação, essa cor indica que o programa está entendendo que a informação inserida pelo usuário é inválida.\n\n" +
+				"5.3) Verde, cor de aprovação, essa cor indica que o programa avaliou a informação inserida e entendeu ela como válida.\n\n" +
+				"6) Cronômetro, as cores não têm o mesmo significado para ele, no cronômetro, vermelho significa que ele está correndo, e verde que ele está parado.";
 	}
 
 	private void actionStart() {
@@ -304,12 +309,15 @@ public final class SheetInjectorGUI extends JFrame {
 
 	private void initComponents() {
 		bar = new JProgressBar();
+		var font = new java.awt.Font("Fira Sans", Font.BOLD, 15);
 		var buttonStart = new JButton("START");
 		var buttonTabLess = new JButton("TAB-");
 		var buttonTabPlus = new JButton("TAB+");
+		buttonStart.setFont(font);
+		buttonStart.setForeground(ColorRepository.instance().getOrangeAccent());
 		tabbedPane = new TupleTabbedPane();
 		JLabel labelChrono = new JLabel("00:00:00");
-		labelChrono.setFont(new java.awt.Font("Fira Sans", 1, 15)); // NOI18N
+		labelChrono.setFont(new java.awt.Font("Fira Sans", Font.BOLD, 15)); // NOI18N
 		var colorRepo = ColorRepository.instance();
 		chronometer = new UnitTimerImpl(labelChrono, colorRepo.getRedAccent(), colorRepo.getGreenAccent());
 		var menuBar = new javax.swing.JMenuBar();
@@ -361,14 +369,14 @@ public final class SheetInjectorGUI extends JFrame {
 								.addContainerGap())
 		);
 
-		tabbedPane.addTab("Sem nome", new TableDTOTabbedContent(tabbedPane));
+		tabbedPane.addTab("Sem nome", new TupleTabbedContent(tabbedPane));
 
 		//listener
-		buttonTabPlus.addActionListener(e -> tabbedPane.addTab("Sem nome", new TableDTOTabbedContent(tabbedPane)));
+		buttonTabPlus.addActionListener(e -> tabbedPane.addTab("Sem nome", new TupleTabbedContent(tabbedPane)));
 		buttonTabLess.addActionListener(e -> {
 			var idx = tabbedPane.getSelectedIndex();
 			if (idx < 0) return;
-			var tabContent = (TableDTOTabbedContent) tabbedPane.getComponentAt(idx);
+			var tabContent = (TupleTabbedContent) tabbedPane.getComponentAt(idx);
 			tabbedPane.remove(tabContent);
 		});
 		buttonStart.addActionListener(e -> actionStart());
