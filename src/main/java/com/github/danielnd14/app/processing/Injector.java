@@ -31,34 +31,37 @@ public final class Injector {
 		final var selfFormulaList = tabbedDTOList.stream().filter(TabbedDTO::hasSelfFormula)
 				.collect(Collectors.toUnmodifiableList());
 		final var fileStream = new FileInputStream(sheetFile);
-		final var wb = new XSSFWorkbook(fileStream);
 
-		//aplicando selfValue onde precisa
-		selfFormulaList.forEach(tabbedDTO -> {
-			var sheet = wb.getSheet(tabbedDTO.getTabTitle());
-			if (sheet == null) {
-				return;
-			}
-			var lastRow = sheet.getLastRowNum();
-			for (var idxRow = 0; idxRow <= lastRow; idxRow++) {
-				final Row row = sheet.getRow(idxRow);
-				updateSelfValue(tabbedDTO, row);
-			}
-		});
+		try (final var wb = new XSSFWorkbook(fileStream)) {
+			try (fileStream) {//fileStream needs to close before wb.write
+				//aplicando selfValue onde precisa
+				selfFormulaList.forEach(tabbedDTO -> {
+					var sheet = wb.getSheet(tabbedDTO.getTabTitle());
+					if (sheet == null) {
+						return;
+					}
+					var lastRow = sheet.getLastRowNum();
+					for (var idxRow = 0; idxRow <= lastRow; idxRow++) {
+						final Row row = sheet.getRow(idxRow);
+						updateSelfValue(tabbedDTO, row);
+					}
+				});
 
-		final var ev = wb.getCreationHelper().createFormulaEvaluator();
-		//injetando formulas
-		tabbedDTOList.forEach(tabbedDTO -> {
-			var sheet = wb.getSheet(tabbedDTO.getTabTitle());
-			if (sheet == null) return;
-			var lastRow = sheet.getLastRowNum();
-			for (var idxRow = 0; idxRow <= lastRow; idxRow++) {
-				final Row row = sheet.getRow(idxRow);
-				insertFormulaValue(tabbedDTO, row, ev);
+				final var ev = wb.getCreationHelper().createFormulaEvaluator();
+				//injetando formulas
+				tabbedDTOList.forEach(tabbedDTO -> {
+					var sheet = wb.getSheet(tabbedDTO.getTabTitle());
+					if (sheet == null) return;
+					var lastRow = sheet.getLastRowNum();
+					for (var idxRow = 0; idxRow <= lastRow; idxRow++) {
+						final Row row = sheet.getRow(idxRow);
+						if (row != null)
+							insertFormulaValue(tabbedDTO, row, ev);
+					}
+				});
 			}
-		});
-		fileStream.close();
-		writeFile(wb, sheetFile);
+			writeFile(wb, sheetFile);
+		}
 	}
 
 	private static void updateSelfValue(TabbedDTO tabbedDTO, Row row) {
@@ -82,7 +85,8 @@ public final class Injector {
 		for (final var tt : tabbedDTO.getTupleList()) {
 			for (var idxCol : tt.cols()) {
 				final var cell = row.getCell(idxCol);
-				var formula = tt.formula(row.getRowNum() + 1);
+				if (cell == null) continue;
+				var formula = tt.formula(row.getRowNum());
 				if (!formula.equalsIgnoreCase("self") && !formula.equalsIgnoreCase(TableDTO.NOTHING_TO_DO)) {
 					cell.setCellFormula(formula);
 					ev.evaluateFormulaCell(cell);
@@ -93,12 +97,11 @@ public final class Injector {
 
 
 	private static void writeFile(final Workbook wb, final File file) throws IOException {
-		final var dir = file.getParentFile();
-		if (!dir.exists()) Files.createDirectory(dir.toPath());
-		if (!file.exists()) Files.createFile(file.toPath());
-		final var fileOut = new FileOutputStream(file);
-		wb.write(fileOut);
-		fileOut.close();
-		wb.close();
+		try (wb; final var fileOut = new FileOutputStream(file)) {
+			final var dir = file.getParentFile();
+			if (!dir.exists()) Files.createDirectory(dir.toPath());
+			if (!file.exists()) Files.createFile(file.toPath());
+			wb.write(fileOut);
+		}
 	}
 }

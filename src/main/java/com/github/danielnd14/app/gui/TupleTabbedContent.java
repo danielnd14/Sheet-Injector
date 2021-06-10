@@ -22,20 +22,33 @@ import static java.util.stream.IntStream.range;
 public final class TupleTabbedContent extends JPanel implements AutoCloseable, TableDTOFont {
 	private JTabbedPane parent;
 	private JTable table;
+	private final int myIDX;
+	private JTextField fieldSheet;
 
-	public TupleTabbedContent(final JTabbedPane parent) {
+	public TupleTabbedContent(final TupleTabbedPane parent) {
 		Objects.requireNonNull(parent);
 		this.parent = parent;
+		myIDX = parent.getNextIDX();
 		SwingUtilities.invokeLater(this::initComponents);
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		this.fieldSheet.setEnabled(enabled);
+		this.table.setEnabled(enabled);
+	}
+
+	protected String getSheetTabName() {
+		return fieldSheet.getText();
+	}
+
 	private void initComponents() {
-		final var fieldSheet = new JTextField("Digite o nome da aba");
+		fieldSheet = new JTextField("Digite o nome da aba");
 		final var jScrollPane1 = new JScrollPane();
 		final var buttonLess = new JButton("-");
 		final var buttonPlus = new JButton("+");
 		final var font = new Font("Fira Sans", Font.BOLD, 15);
-
 		table = new JTable();
 		table.setFont(font);
 		fieldSheet.setFont(font);
@@ -87,13 +100,17 @@ public final class TupleTabbedContent extends JPanel implements AutoCloseable, T
 		);
 		//listeners
 		buttonPlus.addActionListener(e -> SwingUtilities.invokeLater(() -> {
-			var model = (DefaultTableModel) table.getModel();
-			model.addRow(new Object[]{"", "", "ALL-[0]"});
+			if (isEnabled()) {
+				var model = (DefaultTableModel) table.getModel();
+				model.addRow(new Object[]{"", "", "ALL-[0]"});
+			}
 		}));
 		buttonLess.addActionListener(e -> SwingUtilities.invokeLater(() -> {
-			final var model = (DefaultTableModel) table.getModel();
-			final var idxLastRow = model.getRowCount() - 1;
-			if (idxLastRow > 0) model.removeRow(idxLastRow);
+			if (isEnabled()) {
+				final var model = (DefaultTableModel) table.getModel();
+				final var idxLastRow = model.getRowCount() - 1;
+				if (idxLastRow > 0) model.removeRow(idxLastRow);
+			}
 		}));
 		var colorRepository = ColorRepository.instance();
 		fieldSheet.setForeground(colorRepository.getRedAccent());
@@ -113,13 +130,13 @@ public final class TupleTabbedContent extends JPanel implements AutoCloseable, T
 				if (sheetName.isBlank()) {
 					SwingUtilities.invokeLater(() -> {
 						fieldSheet.setText("Digite o nome da aba");
-						parent.setTitleAt(parent.getSelectedIndex(), "Sem nome");
+						parent.setTitleAt(myIDX, "Sem nome");
 						fieldSheet.setForeground(colorRepository.getRedAccent());
 					});
 				} else {
 					SwingUtilities.invokeLater(() -> {
-						parent.setTitleAt(parent.getSelectedIndex(), sheetName);
-						fieldSheet.setForeground(colorRepository.getBlueAccent());
+						parent.setTitleAt(myIDX, sheetName);
+						fieldSheet.setForeground(colorRepository.getPurpleAccent());
 					});
 				}
 			}
@@ -174,7 +191,7 @@ public final class TupleTabbedContent extends JPanel implements AutoCloseable, T
 				if (validator.valid(rowsInfo.replaceAll("\\s+", "")))
 					render.setForeground(colors.getGreenAccent());
 				else render.setForeground(colors.getRedAccent());
-			} else render.setForeground(colors.getBlueAccent());
+			} else render.setForeground(colors.getPurpleAccent());
 			return render;
 		}
 	}

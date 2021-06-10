@@ -11,12 +11,14 @@ import com.github.danielnd14.app.threadservice.PoolService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.stream.IntStream.range;
 
@@ -25,6 +27,9 @@ public final class SheetInjectorGUI extends JFrame {
 	private JProgressBar bar;
 	private TupleTabbedPane tabbedPane;
 	private UnitTimerImpl chronometer;
+	private JButton buttonStart;
+	private JButton buttonTabLess;
+	private JButton buttonTabPlus;
 
 	private SheetInjectorGUI() {
 		super("Sheet-Injector");
@@ -69,7 +74,7 @@ public final class SheetInjectorGUI extends JFrame {
 		dialog.add(s);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.pack();
-		dialog.setSize(instance.getWidth() * 2, instance.getHeight());
+		dialog.setSize(instance.getWidth(), instance.getHeight());
 		dialog.setLocationRelativeTo(instance);
 		dialog.setVisible(true);
 	}
@@ -290,7 +295,7 @@ public final class SheetInjectorGUI extends JFrame {
 				"4.1) Formulas devem ser inseridas conforme a sintaxe e padrões dos estados unidos.\n\n" +
 				"4.2) O símbolo '#' serve para dizer ao programa que a formula deve usar o valor ordinal da linha, exemplo: =(DR#*AB#)+A2, nessa formula as colunas DR e AB acompanharão suas respectivas linhas, pois o símbolo '#' será substituido pelo indice da linha atual onde a formula está sendo aplicada. Logo quando o programa aplicar a formula na linha 5 ele irá colocar a seguinte fórmula =(DR5*AB5)+A2\n\n" +
 				"5) Das cores temos:\n\n" +
-				"5.1) Azul, cor para indicar que o programa não sabe avaliar de imediato se aquela informação é válida, ou seja, ele confia em você.\n\n" +
+				"5.1) Roxo, cor para indicar que o programa não sabe avaliar de imediato se aquela informação é válida, ou seja, ele confia em você.\n\n" +
 				"5.2) Vermelho, cor de reprovação, essa cor indica que o programa está entendendo que a informação inserida pelo usuário é inválida.\n\n" +
 				"5.3) Verde, cor de aprovação, essa cor indica que o programa avaliou a informação inserida e entendeu ela como válida.\n\n" +
 				"6) Cronômetro, as cores não têm o mesmo significado para ele, no cronômetro, vermelho significa que ele está correndo, e verde que ele está parado.";
@@ -310,9 +315,9 @@ public final class SheetInjectorGUI extends JFrame {
 	private void initComponents() {
 		bar = new JProgressBar();
 		var font = new java.awt.Font("Fira Sans", Font.BOLD, 15);
-		var buttonStart = new JButton("START");
-		var buttonTabLess = new JButton("TAB-");
-		var buttonTabPlus = new JButton("TAB+");
+		buttonStart = new JButton("START");
+		buttonTabLess = new JButton("TAB-");
+		buttonTabPlus = new JButton("TAB+");
 		buttonStart.setFont(font);
 		buttonStart.setForeground(ColorRepository.instance().getOrangeAccent());
 		tabbedPane = new TupleTabbedPane();
@@ -387,6 +392,27 @@ public final class SheetInjectorGUI extends JFrame {
 		setLocationRelativeTo(null);
 	}
 
+	private void setEnabledAll(final boolean enabled) {
+		SwingUtilities.invokeLater(() -> {
+			var tabCount = tabbedPane.getTabCount();
+			IntStream.range(0, tabCount).forEach(i -> tabbedPane.getComponentAt(i).setEnabled(enabled));
+		});
+		SwingUtilities.invokeLater(() -> {
+			buttonStart.setEnabled(enabled);
+			buttonTabPlus.setEnabled(enabled);
+			buttonTabLess.setEnabled(enabled);
+		});
+	}
+
+	private void lock() {
+		setEnabledAll(false);
+	}
+
+	private void unlock() {
+		setEnabledAll(true);
+
+	}
+
 	private void initInject(List<TabbedDTO> forms, List<Path> sheetFiles) {
 		bar.setMinimum(0);
 		bar.setValue(0);
@@ -394,10 +420,14 @@ public final class SheetInjectorGUI extends JFrame {
 		PoolService.instance().submit(() -> {
 			var problems = new ArrayList<TupleMessageDTO>();
 			chronometer.start();
-			instance.setEnabled(false);
+			lock();
 			sheetFiles.forEach(path -> {
 				try {
-					instance.setTitle(path.getFileName().toString());
+					var title = "..." + File.separator +
+							path.getParent().getFileName() +
+							File.separator + path.getFileName();
+
+					instance.setTitle(title);
 					Injector.inject(forms, path.toFile());
 				} catch (Exception e) {
 					problems.add(new TupleMessageDTO(e.getMessage(), path.toString()));
@@ -407,7 +437,7 @@ public final class SheetInjectorGUI extends JFrame {
 					System.gc();
 				}
 			});
-			instance.setEnabled(true);
+			unlock();
 			chronometer.stop();
 			if (!problems.isEmpty())
 				showListMessages(problems, "Não consegui injetar nos " + problems.size() + " arquivos abaixo");
@@ -420,7 +450,7 @@ public final class SheetInjectorGUI extends JFrame {
 
 	@Override
 	public void setTitle(String title) {
-		super.setTitle("Sheet-Injector - " + title);
+		super.setTitle("Sheet-Injector -> " + title);
 	}
 
 	private class ConfirmPreInject extends JDialog {
