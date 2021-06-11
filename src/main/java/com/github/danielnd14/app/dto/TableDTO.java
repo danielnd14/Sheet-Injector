@@ -80,7 +80,6 @@ public final class TableDTO {
 			}
 		}
 		return cols;
-
 	}
 
 	public boolean isValid() {
