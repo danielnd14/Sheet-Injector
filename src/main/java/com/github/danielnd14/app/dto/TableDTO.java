@@ -60,7 +60,7 @@ public final class TableDTO {
 				if (actualRow >= boundA && actualRow <= boundB) return NOTHING_TO_DO;
 			} else return NOTHING_TO_DO;
 		}
-		return formulaAux.replaceAll("#", actualRow + "");
+		return formulaAux.replaceAll("#", (actualRow + 1) + "");
 	}
 
 	public List<Integer> cols() {
