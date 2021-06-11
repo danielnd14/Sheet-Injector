@@ -298,7 +298,7 @@ public final class SheetInjectorGUI extends JFrame {
 				"5.1) Roxo, cor para indicar que o programa não sabe avaliar de imediato se aquela informação é válida, ou seja, ele confia em você.\n\n" +
 				"5.2) Vermelho, cor de reprovação, essa cor indica que o programa está entendendo que a informação inserida pelo usuário é inválida.\n\n" +
 				"5.3) Verde, cor de aprovação, essa cor indica que o programa avaliou a informação inserida e entendeu ela como válida.\n\n" +
-				"6) Cronômetro, as cores não têm o mesmo significado para ele, no cronômetro, vermelho significa que ele está correndo, e verde que ele está parado.";
+				"6) Cronômetro, as cores não têm o mesmo significado para ele, no cronômetro, laranja significa que ele está correndo, e verde que ele está parado.";
 	}
 
 	private void actionStart() {
@@ -324,7 +324,7 @@ public final class SheetInjectorGUI extends JFrame {
 		JLabel labelChrono = new JLabel("00:00:00");
 		labelChrono.setFont(new java.awt.Font("Fira Sans", Font.BOLD, 15)); // NOI18N
 		var colorRepo = ColorRepository.instance();
-		chronometer = new UnitTimerImpl(labelChrono, colorRepo.getRedAccent(), colorRepo.getGreenAccent());
+		chronometer = new UnitTimerImpl(labelChrono, colorRepo.getOrangeAccent(), colorRepo.getGreenAccent());
 		var menuBar = new javax.swing.JMenuBar();
 		var AboutMenu = new javax.swing.JMenu();
 		var menuHelp = new javax.swing.JMenuItem();
