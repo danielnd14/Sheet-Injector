@@ -3,9 +3,7 @@ package com.github.danielnd14.app.processing;
 import com.github.danielnd14.app.dto.TabbedDTO;
 import com.github.danielnd14.app.dto.TableDTO;
 import org.apache.poi.ss.formula.FormulaParseException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -47,8 +45,8 @@ public final class Injector {
 					}
 				});
 
-				final var ev = wb.getCreationHelper().createFormulaEvaluator();
 				//injetando formulas
+				var ev = wb.getCreationHelper().createFormulaEvaluator();
 				tabbedDTOList.forEach(tabbedDTO -> {
 					var sheet = wb.getSheet(tabbedDTO.getTabTitle());
 					if (sheet == null) return;
@@ -56,12 +54,20 @@ public final class Injector {
 					for (var idxRow = 0; idxRow <= lastRow; idxRow++) {
 						final Row row = sheet.getRow(idxRow);
 						if (row != null)
-							insertFormulaValue(tabbedDTO, row, ev);
+							insertFormulaValue(tabbedDTO, row);
 					}
+					eval(ev, sheet);
 				});
 			}
 			writeFile(wb, sheetFile);
 		}
+	}
+
+	private static void eval(final XSSFFormulaEvaluator evaluator, final Sheet sheet) {
+		for (var r : sheet)
+			for (var c : r)
+				if (c.getCellType() == CellType.FORMULA)
+					evaluator.evaluateFormulaCell(c);
 	}
 
 	private static void updateSelfValue(TabbedDTO tabbedDTO, Row row) {
@@ -81,7 +87,7 @@ public final class Injector {
 		}
 	}
 
-	private static void insertFormulaValue(TabbedDTO tabbedDTO, Row row, XSSFFormulaEvaluator ev) {
+	private static void insertFormulaValue(TabbedDTO tabbedDTO, Row row) {
 		for (final var tt : tabbedDTO.getTupleList()) {
 			for (var idxCol : tt.cols()) {
 				final var cell = row.getCell(idxCol);
@@ -89,7 +95,6 @@ public final class Injector {
 				var formula = tt.formula(row.getRowNum());
 				if (!formula.equalsIgnoreCase("self") && !formula.equalsIgnoreCase(TableDTO.NOTHING_TO_DO)) {
 					cell.setCellFormula(formula);
-					ev.evaluateFormulaCell(cell);
 				}
 			}
 		}
